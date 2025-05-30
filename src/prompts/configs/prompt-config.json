@@ -3,7 +3,8 @@
     "default": "social-media-analysis.md",
     "sentiment": "sentiment-focused.md",
     "trends": "trend-analysis.md",
-    "competitive": "competitive-analysis.md"
+    "competitive": "competitive-analysis.md",
+    "filter": "filter-tweets.md"
   },
   "variables": {
     "keyword": "{{keyword}}",

@@ -1,7 +1,7 @@
 import { AIProviderFactory, ProviderConfiguration, ProviderType } from './providers/AIProviderFactory';
 import { BaseAIProvider } from './providers/BaseAIProvider';
 
-export type AnalysisType = 'default' | 'sentiment' | 'trends' | 'competitive';
+export type AnalysisType = 'default' | 'sentiment' | 'trends' | 'competitive' | 'filter';
 
 export interface AnalyzerOptions {
   provider?: ProviderType | undefined;
@@ -16,6 +16,31 @@ export class AIAnalyzer {
   constructor(options: AnalyzerOptions = {}) {
     const config = this.createProviderConfig(options);
     this.provider = AIProviderFactory.createProvider(config);
+  }
+
+  async filterTweets(tweets: string[]): Promise<string[]> {
+    try {
+      console.log(`   🤖 Sending request to ${this.provider.getName()} AI for filtering...`);
+      
+      const result = await this.provider.analyzeTweets({
+        tweets,
+        keyword: '', // Keyword is not needed for filtering
+        options: {
+          verbose: false,
+          analysisType: 'filter'
+        }
+      });
+
+      const jsonResult = JSON.parse(result);
+      return jsonResult.relevant_tweets || [];
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error(`AI Filtering error: ${error.message}`);
+        // In case of error, return original tweets to not block the process
+        return tweets;
+      }
+      return tweets;
+    }
   }
 
   async analyzeTweets(tweets: string[], keyword: string, options: AnalyzerOptions = {}): Promise<string> {

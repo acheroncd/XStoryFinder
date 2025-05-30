@@ -158,7 +158,7 @@ const main = async () => {
 
     console.log(`✅ Found ${tweets.length} tweets`);
     console.log('🧹 Processing and cleaning tweets...');
-    const processedTweets = processTweets(tweets);
+    const processedTweets = await processTweets(tweets);
     
     if (options.verbose) {
       console.log(`   📝 Processed ${processedTweets.length} unique tweets`);

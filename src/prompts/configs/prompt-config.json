@@ -14,7 +14,7 @@
   "settings": {
     "max_tweet_length": 280,
     "max_tweets_display": 100,
-    "include_metadata": false,
+    "include_metadata": true,
     "format_tweets_numbered": true
   },
   "provider_preferences": {

@@ -1,7 +1,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { Tweet } from '../types';
 
-export type AnalysisType = 'default' | 'sentiment' | 'trends' | 'competitive';
+export type AnalysisType = 'default' | 'sentiment' | 'trends' | 'competitive' | 'filter';
 
 export interface PromptConfig {
   templates: Record<string, string>;
@@ -18,7 +19,7 @@ export interface PromptConfig {
 export interface PromptVariables {
   keyword: string;
   tweet_count: number;
-  tweets: string[];
+  tweets: Tweet[];
   [key: string]: any;
 }
 
@@ -49,7 +50,8 @@ export class PromptManager {
         default: 'social-media-analysis.md',
         sentiment: 'sentiment-focused.md',
         trends: 'trend-analysis.md',
-        competitive: 'competitive-analysis.md'
+        competitive: 'competitive-analysis.md',
+        filter: 'filter-tweets.md'
       },
       variables: {
         keyword: '{{keyword}}',
@@ -59,7 +61,7 @@ export class PromptManager {
       settings: {
         max_tweet_length: 280,
         max_tweets_display: 100,
-        include_metadata: false,
+        include_metadata: true,
         format_tweets_numbered: true
       },
       provider_preferences: {}
@@ -78,15 +80,11 @@ export class PromptManager {
     // Load template content
     const template = this.loadTemplate(templateName);
     
-    // Process tweets according to settings
-    const processedTweets = this.processTweets(variables.tweets);
-    
     // Replace variables in template
     return this.replaceVariables(template, {
       ...variables,
-      tweets: processedTweets,
       tweet_count: variables.tweets.length
-    });
+    }, analysisType);
   }
 
   private getTemplateForAnalysis(
@@ -147,37 +145,56 @@ Tweet Collection ({{tweet_count}} tweets):
 Please format your response with clear sections and emojis as shown above.`;
   }
 
-  private processTweets(tweets: string[]): string {
+  private processTweets(tweets: Tweet[], analysisType: AnalysisType): string {
     const settings = this.config.settings;
-    let processedTweets = tweets.slice(0, settings.max_tweets_display);
 
-    // Truncate tweets if needed
-    if (settings.max_tweet_length > 0) {
-      processedTweets = processedTweets.map(tweet => 
-        tweet.length > settings.max_tweet_length 
-          ? tweet.substring(0, settings.max_tweet_length) + '...'
-          : tweet
-      );
+    if (analysisType === 'filter') {
+        return JSON.stringify(tweets, null, 2);
     }
 
-    // Format tweets
-    if (settings.format_tweets_numbered) {
-      return processedTweets
-        .map((tweet, index) => `${index + 1}. ${tweet}`)
-        .join('\n');
+    let processedTweets = tweets.slice(0, settings.max_tweets_display);
+
+    if (settings.include_metadata) {
+        const tweetStrings = processedTweets.map(tweet => {
+            let tweetString = tweet.text;
+            if (settings.max_tweet_length > 0 && tweetString.length > settings.max_tweet_length) {
+                tweetString = tweetString.substring(0, settings.max_tweet_length) + '...';
+            }
+            return `Tweet: ${tweetString}\nFollowers: ${tweet.author_followers_count}\nViews: ${tweet.public_metrics?.impression_count}`;
+        });
+
+        if (settings.format_tweets_numbered) {
+            return tweetStrings.map((tweet, index) => `${index + 1}. ${tweet}`).join('\n\n');
+        } else {
+            return tweetStrings.map(tweet => `- ${tweet}`).join('\n\n');
+        }
     } else {
-      return processedTweets
-        .map(tweet => `- ${tweet}`)
-        .join('\n');
+        const tweetStrings = processedTweets.map(tweet => {
+            if (settings.max_tweet_length > 0 && tweet.text.length > settings.max_tweet_length) {
+                return tweet.text.substring(0, settings.max_tweet_length) + '...';
+            }
+            return tweet.text;
+        });
+
+        if (settings.format_tweets_numbered) {
+            return tweetStrings.map((tweet, index) => `${index + 1}. ${tweet}`).join('\n');
+        } else {
+            return tweetStrings.map(tweet => `- ${tweet}`).join('\n');
+        }
     }
   }
 
-  private replaceVariables(template: string, variables: Record<string, any>): string {
+  private replaceVariables(template: string, variables: Record<string, any>, analysisType: AnalysisType): string {
     let result = template;
     
     Object.entries(variables).forEach(([key, value]) => {
       const placeholder = `{{${key}}}`;
-      const replacement = value !== undefined ? String(value) : '';
+      let replacement: string;
+      if (key === 'tweets' && Array.isArray(value)) {
+        replacement = this.processTweets(value, analysisType);
+      } else {
+        replacement = value !== undefined ? String(value) : '';
+      }
       result = result.replace(new RegExp(placeholder, 'g'), replacement);
     });
 
@@ -195,7 +212,7 @@ Please format your response with clear sections and emojis as shown above.`;
   }
 
   getAnalysisTypes(): AnalysisType[] {
-    return ['default', 'sentiment', 'trends', 'competitive'];
+    return ['default', 'sentiment', 'trends', 'competitive', 'filter'];
   }
 
   getProviderPreferences(provider: string, model?: string): any {

@@ -1,3 +1,6 @@
+import { Tweet } from '../../types';
+import { PromptManager, AnalysisType } from '../PromptManager';
+
 export interface AIProviderConfig {
   apiKey: string;
   model?: string | undefined;
@@ -7,15 +10,13 @@ export interface AIProviderConfig {
 }
 
 export interface AnalysisRequest {
-  tweets: string[];
+  tweets: Tweet[];
   keyword: string;
   options?: {
     verbose?: boolean | undefined;
-    analysisType?: 'default' | 'sentiment' | 'trends' | 'competitive' | undefined;
+    analysisType?: AnalysisType | undefined;
   } | undefined;
 }
-
-import { PromptManager, AnalysisType } from '../PromptManager';
 
 export abstract class BaseAIProvider {
   protected config: AIProviderConfig;
@@ -38,7 +39,7 @@ export abstract class BaseAIProvider {
   }
 
   protected createAnalysisPrompt(
-    tweets: string[], 
+    tweets: Tweet[], 
     keyword: string, 
     analysisType: AnalysisType = 'default'
   ): string {
@@ -55,7 +56,7 @@ export abstract class BaseAIProvider {
   }
 
   // Legacy method for backward compatibility
-  protected createLegacyAnalysisPrompt(tweets: string[], keyword: string): string {
+  protected createLegacyAnalysisPrompt(tweets: Tweet[], keyword: string): string {
     return this.createAnalysisPrompt(tweets, keyword, 'default');
   }
 }

@@ -1,5 +1,6 @@
 import { AIProviderFactory, ProviderConfiguration, ProviderType } from './providers/AIProviderFactory';
 import { BaseAIProvider } from './providers/BaseAIProvider';
+import { Tweet } from '../types';
 
 export type AnalysisType = 'default' | 'sentiment' | 'trends' | 'competitive' | 'filter';
 
@@ -18,7 +19,7 @@ export class AIAnalyzer {
     this.provider = AIProviderFactory.createProvider(config);
   }
 
-  async filterTweets(tweets: string[]): Promise<string[]> {
+  async filterTweets(tweets: Tweet[]): Promise<Tweet[]> {
     try {
       console.log(`   🤖 Sending request to ${this.provider.getName()} AI for filtering...`);
       
@@ -43,7 +44,7 @@ export class AIAnalyzer {
     }
   }
 
-  async analyzeTweets(tweets: string[], keyword: string, options: AnalyzerOptions = {}): Promise<string> {
+  async analyzeTweets(tweets: Tweet[], keyword: string, options: AnalyzerOptions = {}): Promise<string> {
     try {
       console.log(`   🤖 Sending request to ${this.provider.getName()} AI...`);
       
@@ -91,8 +92,8 @@ export class AIAnalyzer {
       provider,
       apiKey,
       model: options.model || undefined,
-      maxTokens: 2000,
-      temperature: 0.7
+      maxTokens: 4000,
+      temperature: 0.5
     };
   }
 
@@ -121,7 +122,7 @@ export class AIAnalyzer {
 }
 
 // Backward compatibility function
-export const analyzeTweets = async (tweets: string[], keyword: string, options: AnalyzerOptions = {}): Promise<string> => {
+export const analyzeTweets = async (tweets: Tweet[], keyword: string, options: AnalyzerOptions = {}): Promise<string> => {
   const analyzer = new AIAnalyzer(options);
   return analyzer.analyzeTweets(tweets, keyword, options);
 };

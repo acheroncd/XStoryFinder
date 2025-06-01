@@ -10,7 +10,9 @@ export interface Tweet {
     like_count: number;
     reply_count: number;
     quote_count: number;
+    impression_count: number;
   } | undefined;
+  author_followers_count?: number | undefined;
 }
 
 export interface AnalysisResult {

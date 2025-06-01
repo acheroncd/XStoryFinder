@@ -12,29 +12,54 @@ export const getTweets = async (keyword: string, limit: number = 50): Promise<Tw
     
     console.log(`   🔍 Searching Twitter API with query: "${query}"`);
     
-    // Make the actual API call
-    const response = await client.v2.search(query, {
-      max_results: Math.min(limit, 100), // Twitter API limit is 100 per request
-      'tweet.fields': ['created_at', 'author_id', 'public_metrics', 'context_annotations'],
-      'user.fields': ['username', 'name', 'verified'],
-      expansions: ['author_id']
-    });
+    let allTweets: Tweet[] = [];
+    let nextToken: string | undefined = undefined;
+    let requests = 0;
+    const maxRequests = 5; // To avoid infinite loops in case of issues
 
-    if (!response.data) {
-      return [];
+    while (allTweets.length < limit && requests < maxRequests) {
+        const response = await client.v2.search(query, {
+            max_results: Math.min(limit - allTweets.length, 100),
+            'tweet.fields': ['created_at', 'author_id', 'public_metrics', 'context_annotations'],
+            'user.fields': ['username', 'name', 'verified', 'public_metrics'],
+            expansions: ['author_id'],
+            next_token: nextToken
+        });
+
+        if (!response.data || !response.data.data) {
+            break;
+        }
+
+        const users = response.includes?.users || [];
+        const userMap = new Map(users.map(user => [user.id, user]));
+
+        const tweets: Tweet[] = response.data.data.map(tweet => {
+            const user = userMap.get(tweet.author_id!);
+            return {
+                id: tweet.id,
+                text: tweet.text,
+                author_id: tweet.author_id,
+                created_at: tweet.created_at,
+                username: user?.username,
+                public_metrics: {
+                    ...tweet.public_metrics,
+                    impression_count: tweet.public_metrics?.impression_count || 0
+                },
+                author_followers_count: user?.public_metrics?.followers_count || 0
+            };
+        });
+
+        allTweets = allTweets.concat(tweets);
+        nextToken = response.data.meta?.next_token;
+        requests++;
+
+        if (!nextToken) {
+            break;
+        }
     }
 
-    // Transform Twitter API response to our Tweet type
-    const tweets: Tweet[] = response.data.data?.map(tweet => ({
-      id: tweet.id,
-      text: tweet.text,
-      author_id: tweet.author_id || undefined,
-      created_at: tweet.created_at || undefined,
-      public_metrics: tweet.public_metrics || undefined,
-      username: response.includes?.users?.find(user => user.id === tweet.author_id)?.username || undefined
-    })) || [];
 
-    return tweets;
+    return allTweets.slice(0, limit);
   } catch (error) {
     if (error instanceof Error) {
       // Handle specific Twitter API errors

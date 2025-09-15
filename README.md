@@ -1,12 +1,12 @@
 # 🔍 XStoryFinder - X/Twitter Story Finder & AI Analyzer
 
-A powerful command-line interface (CLI) tool that fetches tweets based on keywords and provides comprehensive AI-powered analysis and insights using Google's advanced Gemini AI technology.
+A powerful command-line interface (CLI) tool that fetches tweets based on keywords and provides comprehensive AI-powered analysis and insights using multiple AI providers including Google Gemini, OpenRouter (Claude, GPT-4, Llama), and more.
 
 ## ✨ Key Features
 
 - 🐦 **Smart Tweet Fetching**: Search and retrieve relevant tweets from X (Twitter) using targeted keywords
 - 🧹 **Intelligent Data Cleaning**: Automatic filtering of retweets, replies, and duplicate content for quality analysis
-- 🤖 **Advanced AI Analysis**: Comprehensive sentiment analysis and theme identification powered by Google Gemini AI
+- 🤖 **Multi-Provider AI Analysis**: Comprehensive sentiment analysis and theme identification using multiple AI providers (Gemini, OpenRouter with Claude/GPT-4/Llama, etc.)
 - 📊 **Rich Analytical Insights**: Detailed key themes, sentiment breakdowns, and executive summaries
 - 🎯 **User-Friendly CLI**: Intuitive command-line interface with comprehensive help and options
 - 🔧 **Highly Configurable**: Customizable tweet limits, verbose logging, and flexible search parameters
@@ -18,7 +18,9 @@ A powerful command-line interface (CLI) tool that fetches tweets based on keywor
 - **Node.js** (v16 or higher) - JavaScript runtime environment
 - **npm** or **yarn** - Package manager for dependency installation
 - **X (Twitter) API Bearer Token** - For accessing Twitter's API services
-- **Google Gemini API Key** - For AI-powered analysis capabilities
+- **AI Provider API Key** - At least one of the following:
+  - **Google Gemini API Key** - For Google's Gemini AI models
+  - **OpenRouter API Key** - For access to Claude, GPT-4, Llama, and other models
 
 ### Installation
 
@@ -41,7 +43,10 @@ A powerful command-line interface (CLI) tool that fetches tweets based on keywor
    Edit `.env` and add your API keys:
    ```env
    X_BEARER_TOKEN="your_twitter_bearer_token_here"
+   
+   # At least one AI provider key is required:
    GEMINI_API_KEY="your_gemini_api_key_here"
+   OPENROUTER_API_KEY="your_openrouter_api_key_here"
    ```
 
 ### Getting API Keys
@@ -55,31 +60,43 @@ A powerful command-line interface (CLI) tool that fetches tweets based on keywor
 #### Google Gemini API Key
 1. Go to [Google AI Studio](https://makersuite.google.com/app/apikey)
 2. Create a new API key
-3. Copy the API key to your `.env` file
+3. Copy the API key to your `.env` file as `GEMINI_API_KEY`
+
+#### OpenRouter API Key
+1. Go to [OpenRouter](https://openrouter.ai/keys)
+2. Sign up and create a new API key
+3. Add credits to your account for model usage
+4. Copy the API key to your `.env` file as `OPENROUTER_API_KEY`
 
 ## 📖 Usage Guide
 
 ### Basic Usage Examples
 
 ```bash
-# Search for tweets about "artificial intelligence"
+# Search for tweets about "artificial intelligence" (uses default provider)
 npm start -- --keyword "artificial intelligence"
 
-# Short form
-npm start -- -k "climate change"
+# Use specific AI provider
+npm start -- -k "climate change" --provider openrouter
+
+# Use specific model
+npm start -- -k "web3" --model "anthropic/claude-3.5-sonnet"
 ```
 
 ### Advanced Options
 
 ```bash
-# Limit the number of tweets
-npm start -- --keyword "web3" --limit 100
+# Limit the number of tweets with specific provider
+npm start -- --keyword "web3" --limit 100 --provider gemini
 
-# Enable verbose logging
-npm start -- --keyword "machine learning" --verbose
+# Enable verbose logging with specific model
+npm start -- --keyword "machine learning" --verbose --model "openai/gpt-4o"
 
-# Combine options
-npm start -- -k "blockchain" -l 50 -v
+# Combine all options
+npm start -- -k "blockchain" -l 50 -v -p openrouter -m "anthropic/claude-3-opus"
+
+# List available providers and their status
+npm start -- --list-providers
 ```
 
 ### Available Commands
@@ -174,6 +191,42 @@ The conversation around artificial intelligence shows predominantly positive sen
 3. **Enhanced Processing**: Modify `tweetProcessor.ts`
 4. **CLI Options**: Update `src/index.ts` command configuration
 
+## 🤖 AI Providers
+
+XStoryFinder supports multiple AI providers, giving you flexibility in choosing the best model for your analysis needs.
+
+### Supported Providers
+
+#### 🧠 Google Gemini
+- **Models**: `gemini-1.5-flash`, `gemini-1.5-pro`, `gemini-pro`
+- **Strengths**: Fast, cost-effective, good reasoning
+- **Setup**: Get API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
+
+#### 🌐 OpenRouter
+- **Models**: Access to 50+ models including:
+  - **Anthropic Claude**: `anthropic/claude-3.5-sonnet`, `anthropic/claude-3-opus`
+  - **OpenAI GPT**: `openai/gpt-4o`, `openai/gpt-4-turbo`
+  - **Meta Llama**: `meta-llama/llama-3.1-405b-instruct`
+  - **Mistral**: `mistralai/mistral-large`
+  - **And many more...**
+- **Strengths**: Model variety, competitive pricing, latest models
+- **Setup**: Get API key from [OpenRouter](https://openrouter.ai/keys)
+
+### Provider Selection
+
+The tool automatically selects an available provider based on your API keys. You can also specify:
+
+```bash
+# Use specific provider
+npm start -- -k "AI trends" --provider openrouter
+
+# Use specific model
+npm start -- -k "AI trends" --model "anthropic/claude-3.5-sonnet"
+
+# List all available providers
+npm start -- --list-providers
+```
+
 ## 🔧 Configuration
 
 ### Environment Variables
@@ -181,7 +234,8 @@ The conversation around artificial intelligence shows predominantly positive sen
 | Variable | Description | Required |
 |----------|-------------|----------|
 | `X_BEARER_TOKEN` | Twitter API Bearer Token | ✅ |
-| `GEMINI_API_KEY` | Google Gemini API Key | ✅ |
+| `GEMINI_API_KEY` | Google Gemini API Key | ⚠️ At least one AI provider |
+| `OPENROUTER_API_KEY` | OpenRouter API Key | ⚠️ At least one AI provider |
 
 ### CLI Options
 
@@ -189,7 +243,10 @@ The conversation around artificial intelligence shows predominantly positive sen
 |--------|-------|-------------|---------|
 | `--keyword` | `-k` | Search keyword | Required |
 | `--limit` | `-l` | Max tweets to fetch | 50 |
+| `--provider` | `-p` | AI provider (gemini, openrouter) | Auto-detect |
+| `--model` | `-m` | Specific AI model to use | Provider default |
 | `--verbose` | `-v` | Enable verbose logging | false |
+| `--list-providers` | | List available providers | |
 
 ## 🤝 Contributing
 
@@ -207,17 +264,19 @@ This project is licensed under the ISC License - see the [LICENSE](LICENSE) file
 
 ### Common Issues
 
-**"Missing required environment variables"**
-- Ensure your `.env` file exists and contains valid API keys
-- Check that variable names match exactly: `X_BEARER_TOKEN` and `GEMINI_API_KEY`
+**"Missing AI provider API keys"**
+- Ensure your `.env` file contains at least one AI provider key
+- Check variable names: `GEMINI_API_KEY` or `OPENROUTER_API_KEY`
+- Use `--list-providers` to check provider status
 
 **"Twitter API authentication failed"**
 - Verify your Twitter Bearer Token is correct
 - Ensure your Twitter Developer account has proper permissions
 
-**"Gemini API quota exceeded"**
-- Check your Google Cloud billing and quota limits
-- Consider using a different API key or upgrading your plan
+**"AI API quota exceeded"**
+- Check your provider's billing and quota limits
+- Try switching to a different provider: `--provider openrouter`
+- Consider using a different model: `--model "gemini-1.5-flash"`
 
 **"No tweets found"**
 - Try different keywords or check if the topic has recent activity
@@ -233,5 +292,7 @@ This project is licensed under the ISC License - see the [LICENSE](LICENSE) file
 
 - [Twitter API v2](https://developer.twitter.com/en/docs/twitter-api) for tweet data
 - [Google Gemini AI](https://ai.google.dev/) for intelligent analysis
+- [OpenRouter](https://openrouter.ai/) for multi-model AI access
 - [Commander.js](https://github.com/tj/commander.js/) for CLI interface
 - [twitter-api-v2](https://github.com/PLhery/node-twitter-api-v2) for Twitter integration
+- [OpenAI SDK](https://github.com/openai/openai-node) for OpenRouter compatibility

@@ -3,25 +3,65 @@ import { Command } from 'commander';
 import dotenv from 'dotenv';
 import { getTweets } from './services/twitterClient';
 import { processTweets } from './core/tweetProcessor';
-import { analyzeTweets } from './services/aiAnalyzer';
+import { AIAnalyzer, AnalyzerOptions } from './services/aiAnalyzer';
+import { ProviderType } from './services/providers/AIProviderFactory';
 
 // Load environment variables
 dotenv.config();
 
 // Validate required environment variables
-const validateEnvironment = (): void => {
-  const requiredEnvVars = ['X_BEARER_TOKEN', 'GEMINI_API_KEY'];
-  const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
+const validateEnvironment = (provider?: ProviderType): void => {
+  const requiredVars: string[] = ['X_BEARER_TOKEN'];
   
-  if (missingVars.length > 0) {
-    console.error('❌ Missing required environment variables:');
-    missingVars.forEach(varName => {
-      console.error(`   - ${varName}`);
-    });
-    console.error('\n💡 Please check your .env file and ensure all required API keys are set.');
-    console.error('   You can copy .env.example to .env and fill in your API keys.');
+  // Add provider-specific API key requirements
+  if (!provider || provider === 'gemini') {
+    if (process.env.GEMINI_API_KEY) {
+      requiredVars.push('GEMINI_API_KEY');
+    }
+  }
+  
+  if (!provider || provider === 'openrouter') {
+    if (process.env.OPENROUTER_API_KEY) {
+      requiredVars.push('OPENROUTER_API_KEY');
+    }
+  }
+  
+  // Check if at least one AI provider key is available
+  const hasGemini = !!process.env.GEMINI_API_KEY;
+  const hasOpenRouter = !!process.env.OPENROUTER_API_KEY;
+  
+  if (!hasGemini && !hasOpenRouter) {
+    console.error('❌ Missing AI provider API keys. You need at least one of:');
+    console.error('   - GEMINI_API_KEY (for Google Gemini)');
+    console.error('   - OPENROUTER_API_KEY (for OpenRouter models)');
+    console.error('\n💡 Please check your .env file and ensure at least one AI provider key is set.');
     process.exit(1);
   }
+  
+  // Check Twitter API key
+  if (!process.env.X_BEARER_TOKEN) {
+    console.error('❌ Missing required environment variable: X_BEARER_TOKEN');
+    console.error('\n💡 Please set your Twitter API Bearer Token in the .env file.');
+    process.exit(1);
+  }
+};
+
+const listProviders = (): void => {
+  console.log('🤖 Available AI Providers:\n');
+  
+  const providers = AIAnalyzer.getProviderInfo();
+  const supportedProviders = AIAnalyzer.getSupportedProviders();
+  
+  supportedProviders.forEach(providerId => {
+    const provider = providers[providerId];
+    const hasKey = providerId === 'gemini' ? !!process.env.GEMINI_API_KEY : !!process.env.OPENROUTER_API_KEY;
+    const status = hasKey ? '✅' : '❌';
+    
+    console.log(`${status} ${providerId}: ${provider.name}`);
+    console.log(`   Description: ${provider.description}`);
+    console.log(`   Default Model: ${provider.defaultModel}`);
+    console.log(`   Status: ${hasKey ? 'API key configured' : 'API key missing'}\n`);
+  });
 };
 
 const program = new Command();
@@ -32,25 +72,47 @@ program
   .description('🔍 X/Twitter Story Finder & AI Analyzer\n\nFetch tweets by keyword and get AI-powered analysis and insights.')
   .option('-k, --keyword <keyword>', 'Keyword to search for on Twitter')
   .option('-l, --limit <number>', 'Maximum number of tweets to fetch (default: 50)', '50')
+  .option('-p, --provider <provider>', 'AI provider to use (gemini, openrouter)')
+  .option('-m, --model <model>', 'Specific AI model to use')
   .option('-v, --verbose', 'Enable verbose logging')
+  .option('--list-providers', 'List available AI providers and their status')
   .addHelpText('after', `
 Examples:
   $ npm start -- --keyword "artificial intelligence"
-  $ npm start -- -k "climate change" -l 100
-  $ npm start -- --keyword "web3" --verbose
+  $ npm start -- -k "climate change" -l 100 -p openrouter
+  $ npm start -- --keyword "web3" --model "anthropic/claude-3.5-sonnet"
+  $ npm start -- --list-providers
+  
+AI Providers:
+  - gemini: Google Gemini (requires GEMINI_API_KEY)
+  - openrouter: OpenRouter multi-model access (requires OPENROUTER_API_KEY)
   
 Environment Setup:
-  Make sure to set your API keys in the .env file:
-  - X_BEARER_TOKEN: Your Twitter API Bearer Token
-  - GEMINI_API_KEY: Your Google Gemini API Key
+  Set your API keys in the .env file:
+  - X_BEARER_TOKEN: Your Twitter API Bearer Token (required)
+  - GEMINI_API_KEY: Your Google Gemini API Key (optional)
+  - OPENROUTER_API_KEY: Your OpenRouter API Key (optional)
 `)
   .parse(process.argv);
 
 const options = program.opts();
 
 const main = async () => {
-  // Validate environment variables first
-  validateEnvironment();
+  // Handle list providers command
+  if (options.listProviders) {
+    listProviders();
+    return;
+  }
+  
+  // Validate provider if specified
+  if (options.provider && !AIAnalyzer.getSupportedProviders().includes(options.provider)) {
+    console.error(`❌ Error: Unsupported provider "${options.provider}".`);
+    console.error(`Supported providers: ${AIAnalyzer.getSupportedProviders().join(', ')}`);
+    process.exit(1);
+  }
+  
+  // Validate environment variables
+  validateEnvironment(options.provider);
   
   if (!options.keyword) {
     console.error('❌ Error: Keyword is required.');
@@ -87,10 +149,20 @@ const main = async () => {
     }
 
     console.log('🤖 AI analysis in progress...');
-    const analysis = await analyzeTweets(processedTweets, options.keyword);
+    
+    // Create analyzer with specified options
+    const analyzerOptions: AnalyzerOptions = {
+      provider: options.provider,
+      model: options.model,
+      verbose: options.verbose
+    };
+    
+    const analyzer = new AIAnalyzer(analyzerOptions);
+    const analysis = await analyzer.analyzeTweets(processedTweets, options.keyword, analyzerOptions);
 
     console.log('\n' + '='.repeat(50));
     console.log('📊 AI ANALYSIS REPORT');
+    console.log(`🤖 Provider: ${analyzer.getProviderName()}`);
     console.log('='.repeat(50));
     console.log(analysis);
     console.log('='.repeat(50) + '\n');

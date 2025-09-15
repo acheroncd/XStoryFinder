@@ -19,7 +19,16 @@
     "type": "git",
     "url": "git+https://github.com/acheroncd/XStoryFinder.git"
   },
-  "keywords": ["twitter", "x", "ai", "analysis", "cli", "gemini", "social-media", "sentiment-analysis"],
+  "keywords": [
+    "twitter",
+    "x",
+    "ai",
+    "analysis",
+    "cli",
+    "gemini",
+    "social-media",
+    "sentiment-analysis"
+  ],
   "author": "madbot <acheroncd@live.com>",
   "license": "ISC",
   "type": "commonjs",
@@ -36,6 +45,7 @@
     "@google/generative-ai": "^0.24.1",
     "commander": "^14.0.1",
     "dotenv": "^17.2.2",
+    "openai": "^5.20.2",
     "twitter-api-v2": "^1.27.0"
   }
 }

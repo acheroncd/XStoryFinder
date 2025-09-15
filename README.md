@@ -1,24 +1,24 @@
 # 🔍 XStoryFinder - X/Twitter Story Finder & AI Analyzer
 
-A powerful CLI tool that fetches tweets based on keywords and provides AI-powered analysis and insights using Google's Gemini AI.
+A powerful command-line interface (CLI) tool that fetches tweets based on keywords and provides comprehensive AI-powered analysis and insights using Google's advanced Gemini AI technology.
 
-## ✨ Features
+## ✨ Key Features
 
-- 🐦 **Tweet Fetching**: Search and retrieve tweets from X (Twitter) using keywords
-- 🧹 **Data Cleaning**: Automatic filtering of retweets, replies, and duplicate content
-- 🤖 **AI Analysis**: Advanced sentiment analysis and theme identification using Google Gemini
-- 📊 **Rich Insights**: Key themes, sentiment breakdown, and executive summaries
-- 🎯 **CLI Interface**: Easy-to-use command-line interface with helpful options
-- 🔧 **Configurable**: Customizable tweet limits and verbose logging
+- 🐦 **Smart Tweet Fetching**: Search and retrieve relevant tweets from X (Twitter) using targeted keywords
+- 🧹 **Intelligent Data Cleaning**: Automatic filtering of retweets, replies, and duplicate content for quality analysis
+- 🤖 **Advanced AI Analysis**: Comprehensive sentiment analysis and theme identification powered by Google Gemini AI
+- 📊 **Rich Analytical Insights**: Detailed key themes, sentiment breakdowns, and executive summaries
+- 🎯 **User-Friendly CLI**: Intuitive command-line interface with comprehensive help and options
+- 🔧 **Highly Configurable**: Customizable tweet limits, verbose logging, and flexible search parameters
 
 ## 🚀 Quick Start
 
-### Prerequisites
+### System Requirements
 
-- Node.js (v16 or higher)
-- npm or yarn
-- X (Twitter) API Bearer Token
-- Google Gemini API Key
+- **Node.js** (v16 or higher) - JavaScript runtime environment
+- **npm** or **yarn** - Package manager for dependency installation
+- **X (Twitter) API Bearer Token** - For accessing Twitter's API services
+- **Google Gemini API Key** - For AI-powered analysis capabilities
 
 ### Installation
 
@@ -57,9 +57,9 @@ A powerful CLI tool that fetches tweets based on keywords and provides AI-powere
 2. Create a new API key
 3. Copy the API key to your `.env` file
 
-## 📖 Usage
+## 📖 Usage Guide
 
-### Basic Usage
+### Basic Usage Examples
 
 ```bash
 # Search for tweets about "artificial intelligence"

@@ -1,18 +1,26 @@
 {
   "name": "xstoryfinder",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "X/Twitter Story Finder & AI Analyzer - A CLI tool that fetches tweets and provides AI-powered analysis",
+  "main": "dist/index.js",
+  "bin": {
+    "xstoryfinder": "dist/index.js"
+  },
   "scripts": {
     "start": "ts-node src/index.ts",
+    "start:prod": "node dist/index.js",
+    "dev": "ts-node --watch src/index.ts",
+    "build": "tsc",
+    "build:clean": "rm -rf dist && npm run build",
+    "lint": "tsc --noEmit",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/acheroncd/XStoryFinder.git"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": ["twitter", "x", "ai", "analysis", "cli", "gemini", "social-media", "sentiment-analysis"],
+  "author": "madbot <acheroncd@live.com>",
   "license": "ISC",
   "type": "commonjs",
   "bugs": {

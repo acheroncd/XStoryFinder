@@ -1,0 +1,33 @@
+{
+  "name": "xstoryfinder",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "ts-node src/index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/acheroncd/XStoryFinder.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/acheroncd/XStoryFinder/issues"
+  },
+  "homepage": "https://github.com/acheroncd/XStoryFinder#readme",
+  "devDependencies": {
+    "@types/node": "^24.4.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "commander": "^14.0.1",
+    "dotenv": "^17.2.2",
+    "twitter-api-v2": "^1.27.0"
+  }
+}

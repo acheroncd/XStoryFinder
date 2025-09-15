@@ -74,6 +74,7 @@ program
   .option('-l, --limit <number>', 'Maximum number of tweets to fetch (default: 50)', '50')
   .option('-p, --provider <provider>', 'AI provider to use (gemini, openrouter)')
   .option('-m, --model <model>', 'Specific AI model to use')
+  .option('-a, --analysis <type>', 'Analysis type (default, sentiment, trends, competitive)', 'default')
   .option('-v, --verbose', 'Enable verbose logging')
   .option('--list-providers', 'List available AI providers and their status')
   .addHelpText('after', `
@@ -81,11 +82,18 @@ Examples:
   $ npm start -- --keyword "artificial intelligence"
   $ npm start -- -k "climate change" -l 100 -p openrouter
   $ npm start -- --keyword "web3" --model "anthropic/claude-3.5-sonnet"
+  $ npm start -- -k "bitcoin" --analysis sentiment
   $ npm start -- --list-providers
   
 AI Providers:
   - gemini: Google Gemini (requires GEMINI_API_KEY)
   - openrouter: OpenRouter multi-model access (requires OPENROUTER_API_KEY)
+  
+Analysis Types:
+  - default: Comprehensive social media analysis
+  - sentiment: Focused sentiment and emotion analysis
+  - trends: Trend identification and viral content analysis
+  - competitive: Brand and market competitive analysis
   
 Environment Setup:
   Set your API keys in the .env file:
@@ -108,6 +116,14 @@ const main = async () => {
   if (options.provider && !AIAnalyzer.getSupportedProviders().includes(options.provider)) {
     console.error(`❌ Error: Unsupported provider "${options.provider}".`);
     console.error(`Supported providers: ${AIAnalyzer.getSupportedProviders().join(', ')}`);
+    process.exit(1);
+  }
+  
+  // Validate analysis type if specified
+  const validAnalysisTypes = ['default', 'sentiment', 'trends', 'competitive'];
+  if (options.analysis && !validAnalysisTypes.includes(options.analysis)) {
+    console.error(`❌ Error: Unsupported analysis type "${options.analysis}".`);
+    console.error(`Supported analysis types: ${validAnalysisTypes.join(', ')}`);
     process.exit(1);
   }
   
@@ -154,7 +170,8 @@ const main = async () => {
     const analyzerOptions: AnalyzerOptions = {
       provider: options.provider,
       model: options.model,
-      verbose: options.verbose
+      verbose: options.verbose,
+      analysisType: options.analysis
     };
     
     const analyzer = new AIAnalyzer(analyzerOptions);
@@ -163,6 +180,7 @@ const main = async () => {
     console.log('\n' + '='.repeat(50));
     console.log('📊 AI ANALYSIS REPORT');
     console.log(`🤖 Provider: ${analyzer.getProviderName()}`);
+    console.log(`📋 Analysis Type: ${options.analysis || 'default'}`);
     console.log('='.repeat(50));
     console.log(analysis);
     console.log('='.repeat(50) + '\n');

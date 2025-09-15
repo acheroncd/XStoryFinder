@@ -33,7 +33,11 @@ export class GeminiProvider extends BaseAIProvider {
         model: this.config.model || this.getDefaultModel() 
       });
       
-      const prompt = this.createAnalysisPrompt(request.tweets, request.keyword);
+      const prompt = this.createAnalysisPrompt(
+        request.tweets, 
+        request.keyword, 
+        request.options?.analysisType || 'default'
+      );
       
       if (request.options?.verbose) {
         console.log(`   🤖 Using ${this.getName()} model: ${this.config.model || this.getDefaultModel()}`);

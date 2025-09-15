@@ -1,10 +1,13 @@
 import { AIProviderFactory, ProviderConfiguration, ProviderType } from './providers/AIProviderFactory';
 import { BaseAIProvider } from './providers/BaseAIProvider';
 
+export type AnalysisType = 'default' | 'sentiment' | 'trends' | 'competitive';
+
 export interface AnalyzerOptions {
   provider?: ProviderType | undefined;
   model?: string | undefined;
   verbose?: boolean | undefined;
+  analysisType?: AnalysisType | undefined;
 }
 
 export class AIAnalyzer {
@@ -23,7 +26,8 @@ export class AIAnalyzer {
         tweets,
         keyword,
         options: {
-          verbose: options.verbose || undefined
+          verbose: options.verbose || undefined,
+          analysisType: options.analysisType || undefined
         }
       });
 

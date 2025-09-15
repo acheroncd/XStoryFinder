@@ -11,14 +11,19 @@ export interface AnalysisRequest {
   keyword: string;
   options?: {
     verbose?: boolean | undefined;
+    analysisType?: 'default' | 'sentiment' | 'trends' | 'competitive' | undefined;
   } | undefined;
 }
 
+import { PromptManager, AnalysisType } from '../PromptManager';
+
 export abstract class BaseAIProvider {
   protected config: AIProviderConfig;
+  protected promptManager: PromptManager;
 
   constructor(config: AIProviderConfig) {
     this.config = config;
+    this.promptManager = new PromptManager();
   }
 
   abstract getName(): string;
@@ -32,26 +37,25 @@ export abstract class BaseAIProvider {
     }
   }
 
-  protected createAnalysisPrompt(tweets: string[], keyword: string): string {
-    return `You are an expert social media trend analyst. Please analyze the following collection of tweets about "${keyword}".
+  protected createAnalysisPrompt(
+    tweets: string[], 
+    keyword: string, 
+    analysisType: AnalysisType = 'default'
+  ): string {
+    return this.promptManager.getPrompt(
+      analysisType,
+      {
+        keyword,
+        tweets,
+        tweet_count: tweets.length
+      },
+      this.getName().toLowerCase(),
+      this.config.model
+    );
+  }
 
-Please provide a comprehensive analysis with the following sections:
-
-🎯 **KEY THEMES**
-Identify the main discussion themes and topics (3-5 key themes)
-
-📊 **SENTIMENT ANALYSIS** 
-Analyze the overall sentiment (positive/negative/neutral) with percentages if possible
-
-👥 **KEY INSIGHTS**
-Notable patterns, trending opinions, or emerging narratives
-
-📝 **EXECUTIVE SUMMARY**
-A concise summary of findings (150-200 words)
-
-Tweet Collection (${tweets.length} tweets):
-${tweets.map((tweet, index) => `${index + 1}. ${tweet}`).join('\n')}
-
-Please format your response with clear sections and emojis as shown above.`;
+  // Legacy method for backward compatibility
+  protected createLegacyAnalysisPrompt(tweets: string[], keyword: string): string {
+    return this.createAnalysisPrompt(tweets, keyword, 'default');
   }
 }

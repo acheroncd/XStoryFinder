@@ -63,7 +63,11 @@ export class OpenRouterProvider extends BaseAIProvider {
   async analyzeTweets(request: AnalysisRequest): Promise<string> {
     try {
       const model = this.config.model || this.getDefaultModel();
-      const prompt = this.createAnalysisPrompt(request.tweets, request.keyword);
+      const prompt = this.createAnalysisPrompt(
+        request.tweets, 
+        request.keyword, 
+        request.options?.analysisType || 'default'
+      );
       
       if (request.options?.verbose) {
         console.log(`   🤖 Using ${this.getName()} model: ${model}`);

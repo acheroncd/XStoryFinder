@@ -81,6 +81,11 @@ npm start -- -k "climate change" --provider openrouter
 
 # Use specific model
 npm start -- -k "web3" --model "anthropic/claude-3.5-sonnet"
+
+# Use different analysis types
+npm start -- -k "bitcoin" --analysis sentiment
+npm start -- -k "startup trends" --analysis trends
+npm start -- -k "apple vs samsung" --analysis competitive
 ```
 
 ### Advanced Options
@@ -92,8 +97,8 @@ npm start -- --keyword "web3" --limit 100 --provider gemini
 # Enable verbose logging with specific model
 npm start -- --keyword "machine learning" --verbose --model "openai/gpt-4o"
 
-# Combine all options
-npm start -- -k "blockchain" -l 50 -v -p openrouter -m "anthropic/claude-3-opus"
+# Combine all options with analysis type
+npm start -- -k "blockchain" -l 50 -v -p openrouter -m "anthropic/claude-3-opus" -a trends
 
 # List available providers and their status
 npm start -- --list-providers
@@ -125,9 +130,14 @@ The project follows a modular architecture:
 │   ├── index.ts              # Main CLI entry point
 │   ├── services/
 │   │   ├── twitterClient.ts  # X API integration
-│   │   └── aiAnalyzer.ts     # Gemini AI integration
+│   │   ├── aiAnalyzer.ts     # AI analysis orchestration
+│   │   ├── PromptManager.ts  # Prompt template management
+│   │   └── providers/        # AI provider implementations
 │   ├── core/
 │   │   └── tweetProcessor.ts # Data cleaning & processing
+│   ├── prompts/
+│   │   ├── templates/        # Analysis prompt templates
+│   │   └── configs/          # Prompt configuration files
 │   └── types/
 │       └── index.ts          # TypeScript type definitions
 ├── .env                      # Environment variables (create from .env.example)
@@ -186,10 +196,14 @@ The conversation around artificial intelligence shows predominantly positive sen
 
 ### Adding New Features
 
-1. **New Analysis Types**: Extend the `aiAnalyzer.ts` service
-2. **Additional Data Sources**: Create new services in `src/services/`
+1. **New Analysis Types**: 
+   - Add templates in `src/prompts/templates/`
+   - Update `src/prompts/configs/prompt-config.json`
+   - Extend analysis type definitions
+2. **Additional AI Providers**: Create new provider classes in `src/services/providers/`
 3. **Enhanced Processing**: Modify `tweetProcessor.ts`
-4. **CLI Options**: Update `src/index.ts` command configuration
+4. **Custom Prompts**: Edit template files or create new ones
+5. **CLI Options**: Update `src/index.ts` command configuration
 
 ## 🤖 AI Providers
 
@@ -227,6 +241,47 @@ npm start -- -k "AI trends" --model "anthropic/claude-3.5-sonnet"
 npm start -- --list-providers
 ```
 
+## 📊 Analysis Types
+
+XStoryFinder offers specialized analysis templates optimized for different use cases:
+
+### 🎯 Default Analysis
+- **Usage**: `--analysis default` (default)
+- **Focus**: Comprehensive social media analysis
+- **Includes**: Key themes, sentiment, insights, and executive summary
+- **Best for**: General purpose social media monitoring
+
+### 💭 Sentiment Analysis
+- **Usage**: `--analysis sentiment`
+- **Focus**: Deep emotional and sentiment analysis
+- **Includes**: Detailed sentiment breakdown, emotional themes, opinion dynamics
+- **Best for**: Brand monitoring, crisis management, public opinion research
+
+### 📈 Trend Analysis
+- **Usage**: `--analysis trends`
+- **Focus**: Viral content and trending pattern identification
+- **Includes**: Viral content analysis, trend patterns, influencer impact, predictions
+- **Best for**: Content strategy, trend forecasting, viral marketing
+
+### 🏢 Competitive Analysis
+- **Usage**: `--analysis competitive`
+- **Focus**: Brand and market intelligence
+- **Includes**: Brand mentions, market dynamics, competitive positioning
+- **Best for**: Competitive intelligence, market research, brand positioning
+
+### Example Usage
+
+```bash
+# Sentiment analysis for brand monitoring
+npm start -- -k "your-brand" --analysis sentiment
+
+# Trend analysis for content strategy
+npm start -- -k "AI tools" --analysis trends -p openrouter
+
+# Competitive analysis with specific model
+npm start -- -k "smartphone market" --analysis competitive -m "anthropic/claude-3.5-sonnet"
+```
+
 ## 🔧 Configuration
 
 ### Environment Variables
@@ -245,6 +300,7 @@ npm start -- --list-providers
 | `--limit` | `-l` | Max tweets to fetch | 50 |
 | `--provider` | `-p` | AI provider (gemini, openrouter) | Auto-detect |
 | `--model` | `-m` | Specific AI model to use | Provider default |
+| `--analysis` | `-a` | Analysis type (default, sentiment, trends, competitive) | default |
 | `--verbose` | `-v` | Enable verbose logging | false |
 | `--list-providers` | | List available providers | |
 

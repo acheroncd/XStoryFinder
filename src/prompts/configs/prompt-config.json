@@ -1,0 +1,41 @@
+{
+  "templates": {
+    "default": "social-media-analysis.md",
+    "sentiment": "sentiment-focused.md",
+    "trends": "trend-analysis.md",
+    "competitive": "competitive-analysis.md"
+  },
+  "variables": {
+    "keyword": "{{keyword}}",
+    "tweet_count": "{{tweet_count}}",
+    "tweets": "{{tweets}}"
+  },
+  "settings": {
+    "max_tweet_length": 280,
+    "max_tweets_display": 100,
+    "include_metadata": false,
+    "format_tweets_numbered": true
+  },
+  "provider_preferences": {
+    "gemini": {
+      "preferred_template": "social-media-analysis.md",
+      "max_tokens": 2000,
+      "temperature": 0.7
+    },
+    "openrouter": {
+      "preferred_template": "social-media-analysis.md",
+      "max_tokens": 2000,
+      "temperature": 0.7,
+      "model_specific": {
+        "anthropic/claude-3.5-sonnet": {
+          "preferred_template": "trend-analysis.md",
+          "temperature": 0.6
+        },
+        "openai/gpt-4o": {
+          "preferred_template": "sentiment-focused.md",
+          "temperature": 0.8
+        }
+      }
+    }
+  }
+}
